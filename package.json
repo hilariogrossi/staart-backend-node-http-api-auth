@@ -1,0 +1,26 @@
+{
+  "name": "course-node-http-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon --inspect src/index.js",
+    "migrations:add": "echo 'Migration name' && read migration_name && knex migrate:make $migration_name --knexfile=.knexfile.js",
+    "migrations:migrate": "knex migrate:latest --knexfile=.knexfile.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  },
+  "dependencies": {
+    "express": "^4.17.3",
+    "joi": "^17.6.0",
+    "js-yaml": "^4.1.0",
+    "knex": "^2.0.0",
+    "mysql2": "^2.3.3",
+    "swagger-ui-express": "^4.4.0"
+  }
+}

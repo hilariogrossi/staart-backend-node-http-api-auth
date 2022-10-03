@@ -1,0 +1,315 @@
+openapi: 3.0.3
+info:
+  version: v1
+  title: Staart REST API with Node.JS
+  description: |
+    API de gestão de dados de usuários
+
+servers:
+  - url: http://localhost:3000/
+    description: Local deployment server
+
+paths:
+
+  /api/users:
+    get:
+      summary: Lista usuários cadastrados
+      tags:
+        - users
+        - read
+      responses:
+        200:
+          description: Lista contendo usuários cadastrados
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        500:
+          description: Erro inesperado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnexpectedError'
+
+    post:
+      summary: Cadastro de novo usuário
+      tags:
+        - users
+        - write
+      requestBody:
+        description: Dados do usuário a ser cadastrado
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreateInput'
+      responses:
+        200:
+          description: Usuário cadastrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        400:
+          description: Dados de cadastro inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        409:
+          description: Erro de conflito de cadastro
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictError'
+        500:
+          description: Erro inesperado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnexpectedError'
+
+  /api/users/{id}:
+    get:
+      summary: Detalhes de usuário cadastrado
+      tags:
+        - users
+        - read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador único do usuário cadastrado
+          schema:
+            $ref: '#/components/schemas/UserId'
+      responses:
+        200:
+          description: Detalhes de usuário cadastrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        404:
+          description: Usuário não cadastrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+        500:
+          description: Erro inesperado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnexpectedError'
+
+    put:
+      summary: Atualiza dados de usuário cadastrado
+      tags:
+        - users
+        - write
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador único do usuário cadastrado
+          schema:
+            $ref: '#/components/schemas/UserId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdateInput'
+      responses:
+        200:
+          description: Dados atualizados do usuário
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        404:
+          description: Usuário não cadastrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+        500:
+          description: Erro inesperado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnexpectedError'
+
+    delete:
+      summary: Remove o usuário cadastrado
+      tags:
+        - users
+        - write
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador único do usuário cadastrado
+          schema:
+            $ref: '#/components/schemas/UserId'
+      responses:
+        204:
+          description: Usuário removido com sucesso
+        404:
+          description: Usuário não cadastrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+        500:
+          description: Erro inesperado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnexpectedError'
+
+components:
+  schemas:
+
+    UserId:
+      type: integer
+      minimum: 1
+
+    Name:
+      type: string
+      pattern: ^[A-Z][a-z]+$
+
+    Password:
+      type: string
+      minLength: 5
+      maxLength: 40
+
+    UserCreateInput:
+      type: object
+      required:
+        - username
+        - password
+        - firstName
+        - lastName
+      additionalProperties: false
+      properties:
+        username:
+          type: string
+          format: email
+        password:
+          $ref: '#/components/schemas/Password'
+        firstName:
+          $ref: '#/components/schemas/Name'
+        lastName:
+          $ref: '#/components/schemas/Name'
+
+    UserUpdateInput:
+      type: object
+      anyOf:
+        - required: [password]
+        - required: [firstName]
+        - required: [lastName]
+      additionalProperties: false
+      properties:
+        password:
+          $ref: '#/components/schemas/Password'
+        firstName:
+          $ref: '#/components/schemas/Name'
+        lastName:
+          $ref: '#/components/schemas/Name'
+
+    User:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          $ref: '#/components/schemas/UserId'
+        password:
+          $ref: '#/components/schemas/Password'
+        firstName:
+          $ref: '#/components/schemas/Name'
+        lastName:
+          $ref: '#/components/schemas/Name'
+
+    ValidationErrorCause:
+      type: object
+      required:
+        - field
+        - message
+      properties:
+        field:
+          type: string
+        message:
+          type: string
+
+    ValidationError:
+      type: object
+      required:
+        - statusCode
+        - error
+        - message
+      properties:
+        statusCode:
+          type: integer
+          enum: [400]
+        error:
+          type: string
+          enum: [ValidationError]
+        message:
+          type: string
+        cause:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationErrorCause'
+
+    NotFoundError:
+      type: object
+      required:
+        - statusCode
+        - error
+        - message
+      properties:
+        statusCode:
+          type: integer
+          enum: [404]
+        error:
+          type: string
+          enum: [NotFoundError]
+        message:
+          type: string
+          format: ^Resource '\w+' with identifier '\w+' not found$
+          example: Resource 'user' with identifier '69420' not found
+
+    ConflictError:
+      type: object
+      required:
+        - statusCode
+        - error
+        - message
+      properties:
+        statusCode:
+          type: integer
+          enum: [409]
+        error:
+          type: string
+          enum: [ConflictError]
+        message:
+          type: string
+
+    UnexpectedError:
+      type: object
+      required:
+        - statusCode
+        - error
+        - message
+      properties:
+        statusCode:
+          type: integer
+          enum: [500]
+        error:
+          type: string
+          example: UnexpectedError
+        message:
+          type: string
