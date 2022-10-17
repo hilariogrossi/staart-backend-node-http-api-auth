@@ -13,6 +13,15 @@ class NotFoundError extends DomainError {
   }
 }
 
+class AuthenticationError extends DomainError {
+  constructor(username, cause = 'not specified') {
+    super('The user could not be authenticated')
+    this.name = this.constructor.name
+    this.username = username
+    this.cause = cause
+  };
+};
+
 class ValidationError extends DomainError {
   constructor({ message = 'Invalid parameters', validations }) {
     super(message)
@@ -27,4 +36,5 @@ module.exports = {
   NotFoundError,
   ValidationError,
   ConflictError,
+  AuthenticationError,
 }

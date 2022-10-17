@@ -51,7 +51,7 @@ const SQLRepository = () => {
       .from('users')
       .then(decodeUsers)
 
-  const get = (id, transaction=knex) =>
+  const get = (id, transaction = knex) =>
     transaction
       .select('*')
       .from('users')
@@ -69,6 +69,14 @@ const SQLRepository = () => {
         .then(([id]) => get(id, tx))
         .catch(handleUniqueUsernameError(user.username))
     )
+
+  const getByLogin = (username, password) =>
+    knex
+      .select('*')
+      .from('users')
+      .where({ username })
+      .then(handleNotFound)
+      .then(decodeUser)
 
   const update = user =>
     // mysql não tem suporte pra UPDATE ... RETURNING <props>
@@ -91,11 +99,12 @@ const SQLRepository = () => {
     list,
     get,
     insert,
+    getByLogin,
     update,
     del,
-  }
+  };
 
-}
+};
 
 module.exports = {
   SQLRepository,
