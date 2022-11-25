@@ -3,6 +3,6 @@ module.exports = {
   connection: {
     user: 'root',
     password: '',
-    database: 'node-application-database'
+    database: 'node_application_database'
   }
 };

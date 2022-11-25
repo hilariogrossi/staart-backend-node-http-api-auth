@@ -4,7 +4,7 @@ const Joi = require('joi')
 const withAsyncErrorHandler = require('../middlewares/async-error')
 const validate = require('../middlewares/validate')
 const { basicAuth } = require('../middlewares/basic-auth');
-const { encrypt } = require('./repository');
+const { encrypt } = require('../utils/index');
 
 const { UsersRepository } = require('./repository')
 

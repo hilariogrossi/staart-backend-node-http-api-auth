@@ -9,7 +9,7 @@ const decryptHeader = async (authorizationHeader) => {
     if (type !== 'Basic') throw new AuthenticationError(null, 'Head type mismatch');
 
     const decryptedCredentials =
-        Buffer.from(credentials, 'basic64').toString('utf-8');
+        Buffer.from(credentials, 'base64').toString('utf-8');
 
     const [username, plainPassword] = decryptedCredentials.split(':');
 
@@ -38,7 +38,7 @@ const basicAuth = repository =>
 
         } catch (error) {
             if (error instanceof NotFoundError)
-                return next(new AuthenticationError(error.resourceId, 'Username not Found'));
+                return next(new AuthenticationError(error.resourceId, 'Username not Found!'));
             next(error);
         };
     };
