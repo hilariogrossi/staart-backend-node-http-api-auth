@@ -32,7 +32,26 @@ const database = immutable({
   })
 })
 
+const encryption = immutable({
+  salt: 'salt',
+  iterations: 100000,
+  keyLength: 64,
+  digest: 'sha512'
+
+});
+
+const jwt = immutable({
+  secret: 'mpp7094',
+  expiration: '4h',
+  audience: 'urn:api:client',
+  issuer: 'urn:api:issuer'
+
+});
+
 module.exports = immutable({
   database,
   swagger,
+  encryption,
+  jwt
+
 })
