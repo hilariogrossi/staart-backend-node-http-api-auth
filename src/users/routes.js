@@ -1,12 +1,16 @@
 const { Router } = require('express')
 const Joi = require('joi')
+const jwt = require('jsonwebtoken');
+const { jwt: jwtConfig } = require('../config');
 
 const withAsyncErrorHandler = require('../middlewares/async-error')
 const validate = require('../middlewares/validate')
-const { basicAuth } = require('../middlewares/basic-auth');
-const { encrypt } = require('../utils/index');
+//const { basicAuth } = require('../middlewares/basic-auth');
+const { jwtAuth } = require('../middlewares/jwt-auth');
+const { encrypt, safeCompare } = require('../utils/index');
 
-const { UsersRepository } = require('./repository')
+const { UsersRepository } = require('./repository');
+const { AuthenticationError } = require('../errors');
 
 const NameRegex = /^[A-Z][a-z]+$/
 
@@ -67,7 +71,7 @@ const updateUser = async (req, res) => {
   res.status(200).send(updated)
 }
 
-router.put('/:id', validate(UpdateUserSchema), basicAuth(repository), withAsyncErrorHandler(updateUser));
+router.put('/:id', validate(UpdateUserSchema), jwtAuth, withAsyncErrorHandler(updateUser));
 
 // ************
 // ** delete **
@@ -86,7 +90,7 @@ const deleteUser = async (req, res) => {
   res.status(204).send()
 }
 
-router.delete('/:id', validate(DeleteUserSchema), basicAuth(repository), withAsyncErrorHandler(deleteUser))
+router.delete('/:id', validate(DeleteUserSchema), jwtAuth, withAsyncErrorHandler(deleteUser));
 
 // **********
 // ** read **
@@ -109,7 +113,44 @@ const getUser = async (req, res) => {
   res.status(200).send(user)
 }
 
-router.get('/', withAsyncErrorHandler(listUsers))
-router.get('/:id', validate(GetUserSchema), basicAuth(repository), withAsyncErrorHandler(getUser))
+router.get('/', withAsyncErrorHandler(listUsers));
+router.get('/:id', validate(GetUserSchema), jwtAuth, withAsyncErrorHandler(getUser));
+
+// ***********
+// ** login **
+// ***********
+
+const loginUserSchema = {
+  body: Joi.object({
+    username: Joi.string().email().required(),
+    password: Joi.string().min(5).max(255).required()
+
+  })
+
+};
+
+const loginUser = async (req, res) => {
+  const { username, password } = req.body;
+  const { password: userPassword, ...user } = await repository.getByLogin(username);
+
+  if (!user) throw new AuthenticationError('Invalid Credentials!');
+
+  const encrypted = await encrypt(password);
+  const isValid = await safeCompare(encrypted, userPassword);
+
+  if (!isValid) throw new AuthenticationError('Invalid Credentials!');
+
+  const token = jwt.sign(user, jwtConfig.secret, {
+    expiresIn: jwtConfig.expiration,
+    audience: jwtConfig.audience,
+    issuer: jwtConfig.issuer
+
+  })
+
+  res.status(200).send({ token });
+
+};
+
+router.post('/login', validate(loginUserSchema), withAsyncErrorHandler(loginUser));
 
 module.exports = router
