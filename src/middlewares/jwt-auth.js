@@ -1,4 +1,4 @@
-const jwtlib = require('jsonwebtoken');
+/*const jwtlib = require('jsonwebtoken');
 const { AutenticationError } = require('../errors');
 const { jwt } = require('../config');
 
@@ -23,9 +23,20 @@ const jwtAuth = async (req, res, next) => {
 
     }
 
-};
+};*/ //Essa é a parte que foi feita na "UNHA"
+
+
+const { expressjwt } = require('express-jwt');
+const { jwt } = require('../config');
+
 
 module.exports = {
-    jwtAuth
+    jwtAuth: expressjwt({
+        secret: jwt.secret,
+        audience: jwt.audience,
+        issuer: jwt.issuer,
+        algorithms: ['HS256']
+
+    })
 
 };

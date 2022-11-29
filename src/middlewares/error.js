@@ -2,7 +2,8 @@ const {
   NotFoundError,
   ValidationError,
   ConflictError,
-  AuthenticationError
+  AuthenticationError,
+  AuthorizationError
 } = require("../errors")
 
 const validationsToCause = validations =>
@@ -47,6 +48,30 @@ const responseMappers = {
       message: error.massage,
       cause: error.cause,
     }
+  }),
+
+  [AuthorizationError.name]: (error) => ({
+    status: 403,
+    body: {
+      statusCode: 403,
+      error: AuthorizationError.name,
+      message: error.massage,
+      cause: error.cause,
+
+    }
+
+  }),
+
+  UnauthorizedError: (error) => ({
+    status: 401,
+    body: {
+      statusCode: 401,
+      error: AuthenticationError.name,
+      message: error.massage,
+      cause: 'Invalid Token!',
+
+    }
+
   }),
 
   default: (error) => ({
