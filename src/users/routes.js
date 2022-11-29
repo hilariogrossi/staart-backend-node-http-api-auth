@@ -64,7 +64,7 @@ const UpdateUserSchema = {
 
 const updateUser = async (req, res) => {
   const id = parseInt(req.params.id)
-  if (!id !== req.auth.id) throw new AuthorizationError('You are not authorized to update this user!')
+  if (id !== req.auth.id) throw new AuthorizationError('You are not authorized to update this user!')
   const body = req.body
   const registered = await repository.get(id)
   const user = { ...registered, ...body, id }
@@ -86,7 +86,7 @@ const DeleteUserSchema = {
 
 const deleteUser = async (req, res) => {
   const id = parseInt(req.params.id)
-  if (!id !== req.auth.id) throw new AuthorizationError('You are not authorized to delete this user!')
+  if (id !== req.auth.id) throw new AuthorizationError('You are not authorized to delete this user!')
   await repository.get(id)
   await repository.del(id)
   res.status(204).send()
